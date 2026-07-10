@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<Project> findByOwnerId(Long ownerId, Pageable pageable);
+    Boolean existsByIdAndOwnerEmail(Long id, String ownerEmail);
 }
