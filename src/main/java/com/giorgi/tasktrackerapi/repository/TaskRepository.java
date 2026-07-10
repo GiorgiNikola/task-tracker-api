@@ -35,4 +35,20 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("priority") Priority priority,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT (COUNT(t) > 0) FROM Task t
+    WHERE t.id = :taskId
+    AND (t.project.owner.email = :email OR t.assignedUser.email = :email)
+    """)
+    boolean isProjectOwnerOrAssignedUser(@Param("taskId") Long taskId, @Param("email") String email);
+
+    boolean existsByIdAndAssignedUserEmail(Long taskId, String email);
+
+    @Query("""
+    SELECT (COUNT(t) > 0) FROM Task t
+    WHERE t.id = :taskId
+    AND t.project.owner.email = :email
+    """)
+    boolean isTaskProjectOwner(@Param("taskId") Long taskId, @Param("email") String email);
 }

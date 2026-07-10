@@ -35,7 +35,7 @@ public class ProjectService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isOwner(#projectId, authentication)")
+    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isProjectOwner(#projectId, authentication)")
     public void deleteProject(Long projectId) {
         if (!projectRepository.existsById(projectId)) {
             throw new RuntimeException("Project not found");
@@ -44,7 +44,7 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isOwner(#projectId, authentication)")
+    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isProjectOwner(#projectId, authentication)")
     public ProjectResponseDto getProjectById(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
@@ -52,7 +52,7 @@ public class ProjectService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isOwner(#projectId, authentication)")
+    @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isProjectOwner(#projectId, authentication)")
     public ProjectResponseDto updateProject(Long projectId, ProjectRequestDto request) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class ProjectSecurity {
     private final ProjectRepository projectRepository;
 
-    public boolean isOwner(Long projectId, Authentication auth) {
+    public boolean isProjectOwner(Long projectId, Authentication auth) {
         String email = auth.getName();
         return projectRepository.existsByIdAndOwnerEmail(projectId, email);
     }
