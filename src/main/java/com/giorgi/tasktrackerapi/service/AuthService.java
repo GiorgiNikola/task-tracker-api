@@ -6,6 +6,9 @@ import com.giorgi.tasktrackerapi.dto.user.UserRegistrationRequest;
 import com.giorgi.tasktrackerapi.dto.user.UserResponseDto;
 import com.giorgi.tasktrackerapi.entity.User;
 import com.giorgi.tasktrackerapi.enums.Role;
+import com.giorgi.tasktrackerapi.exception.DuplicateResourceException;
+import com.giorgi.tasktrackerapi.exception.InvalidCredentialsException;
+import com.giorgi.tasktrackerapi.exception.ResourceNotFoundException;
 import com.giorgi.tasktrackerapi.mapper.UserMapper;
 import com.giorgi.tasktrackerapi.repository.UserRepository;
 import com.giorgi.tasktrackerapi.security.JwtUtil;
@@ -23,7 +26,7 @@ public class AuthService {
 
     public UserResponseDto register(UserRegistrationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("User with this email already exists");
+            throw new DuplicateResourceException("User with this email already exists");
         }
 
         User user = new User();
@@ -37,10 +40,10 @@ public class AuthService {
 
     public AuthResponseDto login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
 
         AuthResponseDto responseDto = new AuthResponseDto();

@@ -5,6 +5,7 @@ import com.giorgi.tasktrackerapi.entity.Task;
 import com.giorgi.tasktrackerapi.entity.User;
 import com.giorgi.tasktrackerapi.enums.Priority;
 import com.giorgi.tasktrackerapi.enums.TaskStatus;
+import com.giorgi.tasktrackerapi.exception.ResourceNotFoundException;
 import com.giorgi.tasktrackerapi.mapper.TaskMapper;
 import com.giorgi.tasktrackerapi.repository.TaskRepository;
 import com.giorgi.tasktrackerapi.repository.UserRepository;
@@ -30,7 +31,7 @@ public class TaskService {
         Task task = taskMapper.toEntity(request);
         if (request.getAssignedUserId() != null) {
             User user = userRepository.findById(request.getAssignedUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             task.setAssignedUser(user);
         }
         task.setStatus(TaskStatus.TODO);
@@ -42,7 +43,7 @@ public class TaskService {
     @PreAuthorize("hasRole('ADMIN') or @taskSecurity.isTaskProjectOwnerOrAssignedUser(#taskId, authentication)")
     public TaskResponseDto getTaskById(Long taskId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
         return taskMapper.toResponseDto(task);
     }
 
@@ -50,7 +51,7 @@ public class TaskService {
     @PreAuthorize("hasRole('ADMIN') or @taskSecurity.isTaskProjectOwnerOrAssignedUser(#taskId, authentication)")
     public TaskResponseDto updateTask(Long taskId, TaskUpdateDto request) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
@@ -64,7 +65,7 @@ public class TaskService {
     @PreAuthorize("hasRole('ADMIN') or @taskSecurity.isTaskProjectOwner(#taskId, authentication)")
     public void deleteTask(Long taskId) {
         if (!taskRepository.existsById(taskId)) {
-            throw new RuntimeException("Task not found");
+            throw new ResourceNotFoundException("Task not found");
         }
         taskRepository.deleteById(taskId);
     }
@@ -73,9 +74,9 @@ public class TaskService {
     @PreAuthorize("hasRole('ADMIN') or @taskSecurity.isTaskProjectOwner(#taskId, authentication)")
     public TaskResponseDto assignTask(Long taskId, TaskAssignDto request) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
         User user = userRepository.findById(request.getAssignedUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         task.setAssignedUser(user);
         return taskMapper.toResponseDto(task);
     }
@@ -84,7 +85,7 @@ public class TaskService {
     @PreAuthorize("hasRole('ADMIN') or @taskSecurity.isAssignedUser(#taskId, authentication)")
     public TaskResponseDto updateTaskStatus(Long taskId, TaskStatusUpdateDto statusUpdateDto) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
         task.setStatus(statusUpdateDto.getStatus());
         return taskMapper.toResponseDto(task);
     }
@@ -110,7 +111,7 @@ public class TaskService {
                                               Pageable pageable) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
         Long userId = user.getId();
         return taskRepository.findByAssignedUserIdWithFilter(
                 userId,

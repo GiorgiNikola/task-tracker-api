@@ -4,6 +4,7 @@ import com.giorgi.tasktrackerapi.dto.project.ProjectRequestDto;
 import com.giorgi.tasktrackerapi.dto.project.ProjectResponseDto;
 import com.giorgi.tasktrackerapi.entity.Project;
 import com.giorgi.tasktrackerapi.entity.User;
+import com.giorgi.tasktrackerapi.exception.ResourceNotFoundException;
 import com.giorgi.tasktrackerapi.mapper.ProjectMapper;
 import com.giorgi.tasktrackerapi.repository.ProjectRepository;
 import com.giorgi.tasktrackerapi.repository.UserRepository;
@@ -26,7 +27,7 @@ public class ProjectService {
     public ProjectResponseDto createProject(ProjectRequestDto request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User owner = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
         Project project = projectMapper.toEntity(request);
         project.setOwner(owner);
         projectRepository.save(project);
@@ -38,7 +39,7 @@ public class ProjectService {
     @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isProjectOwner(#projectId, authentication)")
     public void deleteProject(Long projectId) {
         if (!projectRepository.existsById(projectId)) {
-            throw new RuntimeException("Project not found");
+            throw new ResourceNotFoundException("Project not found");
         }
         projectRepository.deleteById(projectId);
     }
@@ -47,7 +48,7 @@ public class ProjectService {
     @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isProjectOwner(#projectId, authentication)")
     public ProjectResponseDto getProjectById(Long projectId) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
         return projectMapper.toResponseDto(project);
     }
 
@@ -55,7 +56,7 @@ public class ProjectService {
     @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isProjectOwner(#projectId, authentication)")
     public ProjectResponseDto updateProject(Long projectId, ProjectRequestDto request) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         return projectMapper.toResponseDto(project);
