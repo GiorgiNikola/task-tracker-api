@@ -38,8 +38,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("""
     SELECT (COUNT(t) > 0) FROM Task t
+    LEFT JOIN t.assignedUser au
     WHERE t.id = :taskId
-    AND (t.project.owner.email = :email OR t.assignedUser.email = :email)
+    AND (t.project.owner.email = :email OR au.email = :email)
     """)
     boolean isProjectOwnerOrAssignedUser(@Param("taskId") Long taskId, @Param("email") String email);
 
