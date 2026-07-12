@@ -52,4 +52,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     AND t.project.owner.email = :email
     """)
     boolean isTaskProjectOwner(@Param("taskId") Long taskId, @Param("email") String email);
+
+    boolean existsByProjectId(Long projectId);
 }

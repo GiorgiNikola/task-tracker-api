@@ -4,9 +4,11 @@ import com.giorgi.tasktrackerapi.dto.project.ProjectRequestDto;
 import com.giorgi.tasktrackerapi.dto.project.ProjectResponseDto;
 import com.giorgi.tasktrackerapi.entity.Project;
 import com.giorgi.tasktrackerapi.entity.User;
+import com.giorgi.tasktrackerapi.exception.ProjectHasTasksException;
 import com.giorgi.tasktrackerapi.exception.ResourceNotFoundException;
 import com.giorgi.tasktrackerapi.mapper.ProjectMapper;
 import com.giorgi.tasktrackerapi.repository.ProjectRepository;
+import com.giorgi.tasktrackerapi.repository.TaskRepository;
 import com.giorgi.tasktrackerapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +23,7 @@ public class ProjectService {
     private final ProjectMapper projectMapper;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
 
     @Transactional
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
@@ -40,6 +43,9 @@ public class ProjectService {
     public void deleteProject(Long projectId) {
         if (!projectRepository.existsById(projectId)) {
             throw new ResourceNotFoundException("Project not found");
+        }
+        if (taskRepository.existsByProjectId(projectId)) {
+            throw new ProjectHasTasksException("Cannot delete project with existing tasks");
         }
         projectRepository.deleteById(projectId);
     }
