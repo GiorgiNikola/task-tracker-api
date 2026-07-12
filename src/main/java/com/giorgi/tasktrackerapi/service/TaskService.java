@@ -7,6 +7,7 @@ import com.giorgi.tasktrackerapi.enums.Priority;
 import com.giorgi.tasktrackerapi.enums.TaskStatus;
 import com.giorgi.tasktrackerapi.exception.ResourceNotFoundException;
 import com.giorgi.tasktrackerapi.mapper.TaskMapper;
+import com.giorgi.tasktrackerapi.repository.ProjectRepository;
 import com.giorgi.tasktrackerapi.repository.TaskRepository;
 import com.giorgi.tasktrackerapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +25,14 @@ public class TaskService {
     private final TaskMapper taskMapper;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN') or @projectSecurity.isProjectOwner(#request.projectId, authentication)")
     public TaskResponseDto createTask(TaskRequestDto request) {
+        if (!projectRepository.existsById(request.getProjectId())) {
+            throw new ResourceNotFoundException("Project not found");
+        }
         Task task = taskMapper.toEntity(request);
         if (request.getAssignedUserId() != null) {
             User user = userRepository.findById(request.getAssignedUserId())

@@ -8,6 +8,7 @@ import com.giorgi.tasktrackerapi.enums.Priority;
 import com.giorgi.tasktrackerapi.enums.TaskStatus;
 import com.giorgi.tasktrackerapi.exception.ResourceNotFoundException;
 import com.giorgi.tasktrackerapi.mapper.TaskMapper;
+import com.giorgi.tasktrackerapi.repository.ProjectRepository;
 import com.giorgi.tasktrackerapi.repository.TaskRepository;
 import com.giorgi.tasktrackerapi.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +46,9 @@ class TaskServiceTest {
     @Mock
     private TaskRepository taskRepository;
 
+    @Mock
+    private ProjectRepository projectRepository;
+
     @InjectMocks
     private TaskService taskService;
 
@@ -80,6 +84,7 @@ class TaskServiceTest {
     @Test
     @DisplayName("createTask() should default status to TODO and leave unassigned when no assignedUserId given")
     void createTask_noAssignedUser_savesWithTodoStatusAndNoAssignee() {
+        when(projectRepository.existsById(1L)).thenReturn(true);
         when(taskMapper.toEntity(requestDto)).thenReturn(task);
         TaskResponseDto expectedResponse = new TaskResponseDto();
         expectedResponse.setStatus(TaskStatus.TODO);
@@ -94,9 +99,22 @@ class TaskServiceTest {
     }
 
     @Test
+    @DisplayName("createTask() should throw ResourceNotFoundException when project does not exist")
+    void createTask_projectNotFound_throwsResourceNotFoundException() {
+        requestDto.setProjectId(99L);
+        when(projectRepository.existsById(99L)).thenReturn(false);
+
+        assertThatThrownBy(() -> taskService.createTask(requestDto))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
     @DisplayName("createTask() should assign user when assignedUserId given")
     void createTask_withAssignedUserId_assignsUser() {
         requestDto.setAssignedUserId(2L);
+        when(projectRepository.existsById(1L)).thenReturn(true);
         when(taskMapper.toEntity(requestDto)).thenReturn(task);
         when(userRepository.findById(2L)).thenReturn(Optional.of(assignedUser));
         when(taskMapper.toResponseDto(task)).thenReturn(new TaskResponseDto());
@@ -111,6 +129,7 @@ class TaskServiceTest {
     @DisplayName("createTask() should throw ResourceNotFoundException when assignedUserId does not exist")
     void createTask_assignedUserNotFound_throwsResourceNotFoundException() {
         requestDto.setAssignedUserId(99L);
+        when(projectRepository.existsById(1L)).thenReturn(true);
         when(taskMapper.toEntity(requestDto)).thenReturn(task);
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
