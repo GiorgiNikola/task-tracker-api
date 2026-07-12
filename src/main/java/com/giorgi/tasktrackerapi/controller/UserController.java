@@ -3,6 +3,7 @@ package com.giorgi.tasktrackerapi.controller;
 import com.giorgi.tasktrackerapi.dto.user.UserResponseDto;
 import com.giorgi.tasktrackerapi.dto.user.UserRoleUpdateRequest;
 import com.giorgi.tasktrackerapi.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "Promote user role", description = "ADMIN only. Role change requires re-login due to JWT staleness.")
     @PatchMapping("/{id}/role")
     public ResponseEntity<UserResponseDto> updateUserRole(@PathVariable Long id,
                                                           @Valid @RequestBody UserRoleUpdateRequest request) {

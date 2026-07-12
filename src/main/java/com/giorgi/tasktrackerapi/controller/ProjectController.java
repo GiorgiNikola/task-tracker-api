@@ -3,6 +3,7 @@ package com.giorgi.tasktrackerapi.controller;
 import com.giorgi.tasktrackerapi.dto.project.ProjectRequestDto;
 import com.giorgi.tasktrackerapi.dto.project.ProjectResponseDto;
 import com.giorgi.tasktrackerapi.service.ProjectService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class ProjectController {
         return ResponseEntity.ok(projectResponseDto);
     }
 
+    @Operation(description = "Returns 403 for both unauthorized access and nonexistent IDs, to prevent resource enumeration.")
     @GetMapping("/{id}")
     public ResponseEntity<ProjectResponseDto> getProject(@PathVariable Long id) {
         ProjectResponseDto projectResponseDto = projectService.getProjectById(id);
