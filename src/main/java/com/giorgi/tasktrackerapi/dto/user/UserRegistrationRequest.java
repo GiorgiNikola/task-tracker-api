@@ -9,8 +9,7 @@ import lombok.Setter;
 public class UserRegistrationRequest {
 
     @NotBlank
-    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[a-zA-Z]{2,6}$",
-            message = "Invalid email format")
+    @Email(message = "Invalid email format")
     private String email;
 
     @NotBlank
